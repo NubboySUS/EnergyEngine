@@ -1,0 +1,3 @@
+name=Grass
+shader=Engine/Shaders/default.frag.spv
+color=1,1,1,1

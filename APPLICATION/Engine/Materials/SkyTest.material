@@ -1,0 +1,4 @@
+# Engine standard/base material. Color is a tint multiplied by the sampled colorMap.
+name=Sky test shit
+shader=Engine/Shaders/sky.frag.spv
+color=1,1,1,1

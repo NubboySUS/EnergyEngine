@@ -1,0 +1,5 @@
+# Engine standard/base material. Color is a tint multiplied by the sampled colorMap.
+name=YuY Base Material
+shader=Engine/Shaders/default.frag.spv
+color=1,0.1,0.1,1
+colorMap=Engine/Main/YuY.png

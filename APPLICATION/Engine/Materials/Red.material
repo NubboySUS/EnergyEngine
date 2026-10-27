@@ -1,0 +1,4 @@
+name=Grass
+shader=Engine/Shaders/default.frag.spv
+color=1,0,0,1
+doublesided=true

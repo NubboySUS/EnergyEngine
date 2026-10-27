@@ -1,0 +1,292 @@
+#version 450
+
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+struct SurfaceSample {
+    vec4 position;
+    vec4 normal;
+    vec4 worldDx;
+    vec4 worldDy;
+    uvec4 target;
+};
+struct TraceTriangle {
+    vec4 p0;
+    vec4 p1;
+    vec4 p2;
+    vec4 albedo;
+};
+struct BvhNode {
+    vec4 boundsMin;
+    vec4 boundsMax;
+    uvec4 meta;
+};
+struct TraceLight {
+    vec4 positionRadius;
+    vec4 colorIntensity;
+    uvec4 meta;
+};
+
+layout(set = 0, binding = 0, std430) readonly buffer SurfaceSamples { SurfaceSample values[]; } surfaces;
+layout(set = 0, binding = 1, std430) readonly buffer TraceTriangles { TraceTriangle values[]; } triangles;
+layout(set = 0, binding = 2, std430) readonly buffer TraceSceneData { uint values[]; } sceneData;
+layout(set = 0, binding = 3, std430) writeonly buffer RadianceOutput { vec4 values[]; } outputBuffer;
+
+layout(push_constant) uniform BakePushConstants {
+    uvec4 counts;
+    ivec4 options;
+    uvec4 offsets;
+    vec4 sunDirection;
+    vec4 sunColorIntensity;
+} pc;
+
+const float RAY_EPSILON = 0.00001;
+const float PI = 3.14159265358979323846;
+
+float RayOriginBias(vec3 position) {
+    float coordinateScale = max(max(abs(position.x), abs(position.y)), abs(position.z));
+    return max(0.0001, coordinateScale * 0.0000002);
+}
+
+uint HashUint(uint x) {
+    x ^= x >> 16;
+    x *= 0x7feb352du;
+    x ^= x >> 15;
+    x *= 0x846ca68bu;
+    x ^= x >> 16;
+    return x;
+}
+float Random01(inout uint state) {
+    state = HashUint(state + 0x9e3779b9u);
+    return float(state) * (1.0 / 4294967296.0);
+}
+
+BvhNode LoadNode(uint nodeIndex) {
+    uint base = pc.offsets.x + nodeIndex * 12u;
+    BvhNode node;
+    node.boundsMin = uintBitsToFloat(uvec4(sceneData.values[base + 0u], sceneData.values[base + 1u], sceneData.values[base + 2u], sceneData.values[base + 3u]));
+    node.boundsMax = uintBitsToFloat(uvec4(sceneData.values[base + 4u], sceneData.values[base + 5u], sceneData.values[base + 6u], sceneData.values[base + 7u]));
+    node.meta = uvec4(sceneData.values[base + 8u], sceneData.values[base + 9u], sceneData.values[base + 10u], sceneData.values[base + 11u]);
+    return node;
+}
+
+TraceLight LoadLight(uint lightIndex) {
+    uint base = pc.offsets.z + lightIndex * 12u;
+    TraceLight light;
+    light.positionRadius = uintBitsToFloat(uvec4(sceneData.values[base + 0u], sceneData.values[base + 1u], sceneData.values[base + 2u], sceneData.values[base + 3u]));
+    light.colorIntensity = uintBitsToFloat(uvec4(sceneData.values[base + 4u], sceneData.values[base + 5u], sceneData.values[base + 6u], sceneData.values[base + 7u]));
+    light.meta = uvec4(sceneData.values[base + 8u], sceneData.values[base + 9u], sceneData.values[base + 10u], sceneData.values[base + 11u]);
+    return light;
+}
+
+bool IntersectBounds(vec3 origin, vec3 direction, vec3 bmin, vec3 bmax, float maxDistance) {
+    float nearT = 0.0;
+    float farT = maxDistance;
+    for (int axis = 0; axis < 3; ++axis) {
+        if (abs(direction[axis]) < 1e-8) {
+            if (origin[axis] < bmin[axis] || origin[axis] > bmax[axis]) return false;
+        } else {
+            float inverseDirection = 1.0 / direction[axis];
+            float a = (bmin[axis] - origin[axis]) * inverseDirection;
+            float b = (bmax[axis] - origin[axis]) * inverseDirection;
+            if (a > b) { float temp = a; a = b; b = temp; }
+            nearT = max(nearT, a);
+            farT = min(farT, b);
+            if (farT < nearT) return false;
+        }
+    }
+    return farT > RAY_EPSILON;
+}
+
+bool IntersectTriangle(vec3 origin, vec3 direction, TraceTriangle tri, out float distance, out vec3 normal) {
+    vec3 a = tri.p0.xyz;
+    vec3 e1 = tri.p1.xyz - a;
+    vec3 e2 = tri.p2.xyz - a;
+    vec3 p = cross(direction, e2);
+    float determinant = dot(e1, p);
+    if (abs(determinant) < 1e-8) return false;
+    float inverseDeterminant = 1.0 / determinant;
+    vec3 t = origin - a;
+    float u = dot(t, p) * inverseDeterminant;
+    if (u < 0.0 || u > 1.0) return false;
+    vec3 q = cross(t, e1);
+    float v = dot(direction, q) * inverseDeterminant;
+    if (v < 0.0 || u + v > 1.0) return false;
+    distance = dot(e2, q) * inverseDeterminant;
+    if (distance <= RAY_EPSILON) return false;
+    normal = normalize(cross(e1, e2));
+    return true;
+}
+
+bool TraceClosest(vec3 origin, vec3 direction, float maxDistance, bool frontFaceOnly,
+                  out float hitDistance, out uint hitTriangle, out vec3 hitNormal) {
+    if (pc.counts.z == 0u || pc.counts.y == 0u) return false;
+    uint stack[64];
+    uint stackSize = 1u;
+    stack[0] = 0u;
+    float closest = maxDistance;
+    bool found = false;
+    hitTriangle = 0u;
+    hitNormal = vec3(0.0, 1.0, 0.0);
+    while (stackSize > 0u) {
+        uint nodeIndex = stack[--stackSize];
+        if (nodeIndex >= pc.counts.z) continue;
+        BvhNode node = LoadNode(nodeIndex);
+        if (!IntersectBounds(origin, direction, node.boundsMin.xyz, node.boundsMax.xyz, closest)) continue;
+        if (node.meta.w > 0u) {
+            for (uint i = 0u; i < node.meta.w; ++i) {
+                uint indexOffset = node.meta.z + i;
+                if (indexOffset >= pc.counts.y) continue;
+                uint triIndex = sceneData.values[pc.offsets.y + indexOffset];
+                if (triIndex >= pc.counts.y) continue;
+                float t;
+                vec3 normal;
+                if (IntersectTriangle(origin, direction, triangles.values[triIndex], t, normal) &&
+                    (!frontFaceOnly || dot(normal, direction) < -1e-6) && t < closest) {
+                    closest = t;
+                    hitTriangle = triIndex;
+                    hitNormal = normal;
+                    found = true;
+                }
+            }
+        } else {
+            if (stackSize + 2u > 64u) continue;
+            if (node.meta.y < pc.counts.z) stack[stackSize++] = node.meta.y;
+            if (node.meta.x < pc.counts.z) stack[stackSize++] = node.meta.x;
+        }
+    }
+    hitDistance = closest;
+    return found;
+}
+
+bool IsOccluded(vec3 origin, vec3 direction, float maxDistance) {
+    float hitDistance;
+    uint hitTriangle;
+    vec3 hitNormal;
+    return TraceClosest(origin, direction, maxDistance, false, hitDistance, hitTriangle, hitNormal) && hitDistance < maxDistance;
+}
+
+vec3 DirectLighting(vec3 position, vec3 normal, inout uint rng) {
+    vec3 result = vec3(0.0);
+    int activeGroup = pc.options.z;
+    for (uint i = 0u; i < pc.counts.w; ++i) {
+        TraceLight light = LoadLight(i);
+        bool useLight = false;
+        bool normalizedStaticPass = false;
+        if (activeGroup == -1) {
+            useLight = light.meta.x == 0u;
+        } else if (activeGroup >= 0) {
+            useLight = light.meta.x == 1u && int(light.meta.y) == activeGroup;
+            normalizedStaticPass = true;
+        }
+        if (!useLight) continue;
+
+        vec3 toLight = light.positionRadius.xyz - position;
+        float distanceSquared = dot(toLight, toLight);
+        if (distanceSquared < 1e-8) continue;
+        float distanceToLight = sqrt(distanceSquared);
+        vec3 lightDirection = toLight / distanceToLight;
+        float nDotL = max(dot(normal, lightDirection), 0.0);
+        if (nDotL <= 0.0) continue;
+        if (!normalizedStaticPass && distanceToLight >= light.positionRadius.w) continue;
+        float rayBias = RayOriginBias(position);
+        if (IsOccluded(position + normal * rayBias, lightDirection, distanceToLight - rayBias)) continue;
+
+        vec3 lightColor = normalizedStaticPass ? vec3(1.0) : light.colorIntensity.rgb;
+        float intensity = normalizedStaticPass ? 1.0 : light.colorIntensity.w;
+        float radial = 1.0;
+        if (!normalizedStaticPass) {
+            float edge = max(1.0 - distanceToLight / max(light.positionRadius.w, 0.001), 0.0);
+            radial = edge * edge;
+        }
+        float attenuation = radial / (distanceSquared + 0.25);
+        result += lightColor * (intensity * nDotL * attenuation);
+    }
+
+    bool useSun = (activeGroup == -1 && pc.sunColorIntensity.w > 0.0) || activeGroup == -2;
+    if (useSun) {
+        vec3 sunDirection = normalize(pc.sunDirection.xyz);
+        float angularRadius = clamp(pc.sunDirection.w, 0.0, 0.5);
+        if (angularRadius > 1e-5) {
+            float cosTheta = mix(1.0, cos(angularRadius), Random01(rng));
+            float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
+            float phi = 2.0 * PI * Random01(rng);
+            vec3 helper = abs(sunDirection.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
+            vec3 tangent = normalize(cross(helper, sunDirection));
+            vec3 bitangent = cross(sunDirection, tangent);
+            sunDirection = normalize(sunDirection * cosTheta +
+                (tangent * cos(phi) + bitangent * sin(phi)) * sinTheta);
+        }
+        float nDotSun = max(dot(normal, sunDirection), 0.0);
+        float rayBias = RayOriginBias(position);
+        if (nDotSun > 0.0 && !IsOccluded(position + normal * rayBias, sunDirection, 1e20)) {
+            vec3 sunColor = activeGroup == -2 ? vec3(1.0) : pc.sunColorIntensity.rgb;
+            float sunIntensity = activeGroup == -2 ? 1.0 : pc.sunColorIntensity.w;
+            result += sunColor * (sunIntensity * 3.0 * nDotSun);
+        }
+    }
+    if (activeGroup == -1) {
+        float skyAmount = 0.5 + 0.5 * clamp(normal.z, -1.0, 1.0);
+        result += mix(vec3(0.14, 0.12, 0.10), vec3(0.30, 0.34, 0.42), skyAmount);
+    }
+    return result;
+}
+
+vec3 CosineHemisphereFromRandom(vec3 normal, float r1, float r2) {
+    float radius = sqrt(r1);
+    float phi = 2.0 * PI * r2;
+    vec3 helper = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
+    vec3 tangent = normalize(cross(helper, normal));
+    vec3 bitangent = cross(normal, tangent);
+    return normalize(tangent * (radius * cos(phi)) + bitangent * (radius * sin(phi)) + normal * sqrt(max(0.0, 1.0 - r1)));
+}
+vec3 CosineHemisphere(vec3 normal, inout uint rng) {
+    float r1 = Random01(rng);
+    float r2 = Random01(rng);
+    return CosineHemisphereFromRandom(normal, r1, r2);
+}
+
+void main() {
+    uint sampleIndex = gl_GlobalInvocationID.x;
+    if (sampleIndex >= pc.counts.x) return;
+    SurfaceSample surface = surfaces.values[sampleIndex];
+    vec3 position = surface.position.xyz;
+    vec3 normal = normalize(surface.normal.xyz);
+    uint rng = HashUint(surface.target.x * 1664525u ^ surface.target.y * 1013904223u ^ surface.target.z);
+
+    vec3 radiance = vec3(0.0);
+    int sampleCount = max(pc.options.x, 1);
+    int bounceCount = max(pc.options.y, 0);
+    vec3 indirect = vec3(0.0);
+    float rotationU = Random01(rng);
+    float rotationV = Random01(rng);
+    for (int pathSample = 0; pathSample < sampleCount; ++pathSample) {
+        float subpixelU = fract((float(pathSample) + 0.5) / float(sampleCount) + rotationU);
+        float subpixelV = fract(float(bitfieldReverse(uint(pathSample))) * 2.3283064365386963e-10 + rotationV);
+        vec3 samplePosition = position + surface.worldDx.xyz * (subpixelU - 0.5) + surface.worldDy.xyz * (subpixelV - 0.5);
+        radiance += DirectLighting(samplePosition, normal, rng) / float(sampleCount);
+
+        vec3 throughput = vec3(1.0);
+        vec3 rayOrigin = samplePosition + normal * RayOriginBias(samplePosition);
+        float directionU = fract(subpixelU + Random01(rng));
+        float directionV = fract(subpixelV + Random01(rng));
+        vec3 rayDirection = CosineHemisphereFromRandom(normal, directionU, directionV);
+        for (int bounce = 0; bounce < bounceCount; ++bounce) {
+            float hitDistance;
+            uint hitTriangle;
+            vec3 hitNormal;
+            if (!TraceClosest(rayOrigin, rayDirection, 1e20, true, hitDistance, hitTriangle, hitNormal)) {
+                indirect += throughput * vec3(0.10, 0.12, 0.16);
+                break;
+            }
+            TraceTriangle hit = triangles.values[hitTriangle];
+            vec3 hitPosition = rayOrigin + rayDirection * hitDistance;
+            indirect += throughput * max(hit.albedo.rgb, vec3(0.0)) * DirectLighting(hitPosition, hitNormal, rng);
+            throughput *= max(hit.albedo.rgb, vec3(0.0));
+            if (max(max(throughput.r, throughput.g), throughput.b) < 0.005) break;
+            rayDirection = CosineHemisphere(hitNormal, rng);
+            rayOrigin = hitPosition + hitNormal * RayOriginBias(hitPosition);
+        }
+    }
+    radiance += indirect / float(sampleCount);
+    outputBuffer.values[pc.options.w + int(sampleIndex)] = vec4(max(radiance, vec3(0.0)), 1.0);
+}

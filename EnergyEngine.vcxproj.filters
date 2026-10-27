@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{5bb287b9-d4ec-4eeb-af01-f85cb18a8337}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Main">
+      <UniqueIdentifier>{ea7cf88a-db80-46f0-902a-4acae2a63664}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx;h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Engine\ImGui">
+      <UniqueIdentifier>{5e3bb718-8708-46cf-b65c-45e074720008}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Logs">
+      <UniqueIdentifier>{f3b54187-deb7-4e4a-8d0c-3b08e6d4e7d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\World">
+      <UniqueIdentifier>{a97ce099-9c66-4047-b93f-23e4897ff05c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Shaders">
+      <UniqueIdentifier>{c9c8ba25-17c2-4269-b369-8b3bcbc383fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Main\FileParsers">
+      <UniqueIdentifier>{cbe317de-58e7-4b84-8268-0f0253f63227}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Materials">
+      <UniqueIdentifier>{28eb1d16-919f-4849-a6c8-b05df08db676}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Shaders\Compiled">
+      <UniqueIdentifier>{73740e0d-aca4-4a61-9fd7-e1927f42717d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Assets">
+      <UniqueIdentifier>{fe2fb525-8b48-441b-8a3d-8e21399f89fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Template">
+      <UniqueIdentifier>{309553ba-df79-4ce1-95be-ffa9c25cecb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Template\Gameplay">
+      <UniqueIdentifier>{b8e579f3-deb1-4c8f-bfed-703e3d50a768}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{88f9c74d-6dbc-47aa-a657-1fb4bdfcf581}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="APPLICATION\EnergyEngine.rc" />
+    <ResourceCompile Include="APPLICATION\EngineResources.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="APPLICATION\Engine\Main\Console.cpp">
+      <Filter>Engine\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\Main\CrashHandler.cpp">
+      <Filter>Engine\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\Main\Game.cpp">
+      <Filter>Engine\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\Main\Input.cpp">
+      <Filter>Engine\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\Main\Logger.cpp">
+      <Filter>Engine\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\Main\PlatformWindow.cpp">
+      <Filter>Engine\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\Main\VulkanContext.cpp">
+      <Filter>Engine\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\ImGui\imgui.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\ImGui\imgui_draw.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\ImGui\imgui_impl_engine.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\ImGui\imgui_impl_vulkan.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\ImGui\imgui_tables.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\ImGui\imgui_widgets.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\World\Level.cpp">
+      <Filter>Engine\World</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\World\Camera.cpp">
+      <Filter>Engine\World</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Template\Gameplay\Player.cpp">
+      <Filter>Template\Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="APPLICATION\Engine\Main\FileParsers\xatlas.cpp">
+      <Filter>Engine\Main\FileParsers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="APPLICATION\Engine\Main\Console.h">
+      <Filter>Engine\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\CrashHandler.h">
+      <Filter>Engine\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\Game.h">
+      <Filter>Engine\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\Input.h">
+      <Filter>Engine\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\Logger.h">
+      <Filter>Engine\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\PlatformWindow.h">
+      <Filter>Engine\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\Utils.h">
+      <Filter>Engine\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\VulkanContext.h">
+      <Filter>Engine\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\EngineResources.h">
+      <Filter>Engine\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\ImGui\imgui.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\ImGui\imgui_impl_engine.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\ImGui\imgui_impl_vulkan.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\ImGui\imgui_internal.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\ImGui\imstb_rectpack.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\ImGui\imstb_textedit.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\ImGui\imstb_truetype.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\FileParsers\stb_image.h">
+      <Filter>Engine\Main\FileParsers</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\FileParsers\tiny_obj_loader.h">
+      <Filter>Engine\Main\FileParsers</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\FileParsers\inicpp.h">
+      <Filter>Engine\Main\FileParsers</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\World\Level.h">
+      <Filter>Engine\World</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\World\Camera.h">
+      <Filter>Engine\World</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\ErrorMeshFallback.h">
+      <Filter>Engine\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Template\Gameplay\Player.h">
+      <Filter>Template\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Config\ConsoleCommands.h">
+      <Filter>Config</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Config\ConsoleVariables.h">
+      <Filter>Config</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\FileParsers\xatlas.h">
+      <Filter>Engine\Main\FileParsers</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\resource.h">
+      <Filter>Engine\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="APPLICATION\Engine\Main\FileParsers\SaveLoadEnergyEngineFileFormats.h">
+      <Filter>Engine\Main\FileParsers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="APPLICATION\Engine\Main\PlatformWindow_macos.mm">
+      <Filter>Engine\Main</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\default.frag">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\default.vert">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\error.frag">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\missing.frag">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\post.frag">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\post.vert">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\randomshit.frag">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\sky.frag">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\sky.vert">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Materials\Grass.material">
+      <Filter>Engine\Materials</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Materials\RandomShit.material">
+      <Filter>Engine\Materials</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Materials\SkyTest.material">
+      <Filter>Engine\Materials</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Materials\Test.material">
+      <Filter>Engine\Materials</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Materials\TestToo.material">
+      <Filter>Engine\Materials</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\CompileAllShaders.bat">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Assets\monkey.obj">
+      <Filter>Engine\Assets</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Assets\multimaterialtest.mtl">
+      <Filter>Engine\Assets</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Assets\multimaterialtest.obj">
+      <Filter>Engine\Assets</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Assets\teapot.obj">
+      <Filter>Engine\Assets</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\CompileAllShaders.sh">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Config\EngineConfig.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="APPLICATION\Config\ImGui.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="APPLICATION\Config\UserConfig.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\bakedlight.frag">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\default.frag.eesf" />
+    <None Include="APPLICATION\Engine\Shaders\default.vert.eesf" />
+    <None Include="APPLICATION\Engine\Shaders\error.frag.eesf" />
+    <None Include="APPLICATION\Engine\Shaders\missing.frag.eesf" />
+    <None Include="APPLICATION\Engine\Shaders\post.frag.eesf" />
+    <None Include="APPLICATION\Engine\Shaders\post.vert.eesf" />
+    <None Include="APPLICATION\Engine\Shaders\randomshit.frag.eesf" />
+    <None Include="APPLICATION\Engine\Shaders\sky.frag.eesf" />
+    <None Include="APPLICATION\Engine\Shaders\sky.vert.eesf" />
+    <None Include="APPLICATION\Engine\Shaders\light_bake.comp">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Materials\Red.material">
+      <Filter>Engine\Materials</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Materials\White.material">
+      <Filter>Engine\Materials</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\lightmap_composite.frag">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+    <None Include="APPLICATION\Engine\Shaders\lightmap_info.frag">
+      <Filter>Engine\Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="APPLICATION\Engine\Main\YuY.png">
+      <Filter>Engine\Main</Filter>
+    </Image>
+    <Image Include="APPLICATION\Engine\Assets\grass.png">
+      <Filter>Engine\Assets</Filter>
+    </Image>
+    <Image Include="APPLICATION\Engine\Assets\kva.png">
+      <Filter>Engine\Assets</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

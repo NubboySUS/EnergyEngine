@@ -1,0 +1,5 @@
+name=Grass
+shader=Engine/Shaders/default.frag.spv
+matUV=10,10
+color=1,1,1,1
+colorMap=Engine/Assets/grass.png

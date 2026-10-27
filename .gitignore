@@ -1,0 +1,37 @@
+# Visual Studio
+.vs/
+*.sln.docstates
+EnergyEngine/
+packages/
+
+# Custom Build Folders
+_obj_BUILDS/
+BUILDS/
+build/
+out/
+
+# VS User-specific files
+*.vcxproj.user
+APPLICATION/Engine/BakedLights/
+APPLICATION/Engine/GeneratedMeshes/
+APPLICATION/Engine/Logs/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Build Artifacts & Compiled Files
+bin/
+obj/
+build/
+*.aps
+
+# Local Configuration & User Settings
+*.user
+
+# Environment & Secret Files
+.env
+
+# Logs & Temporary Files
+*.log
+*.tmp

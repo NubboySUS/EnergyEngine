@@ -1,0 +1,5 @@
+name=Random Shit
+shader=Engine/Shaders/randomshit.frag.spv
+color=0.56,0.23,0.95,1
+texture.colorMap=0,
+float.wave=0,0.35
